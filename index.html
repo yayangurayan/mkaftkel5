@@ -3,27 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Strategi Trading Modern: Dasbor Analitik Interaktif</title>
+    <title>Presentasi: Analisa Fundamental & Teknikal</title>
+    <!-- Memuat Library Eksternal -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/date-fns@2.29.3/cdn.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@2.0.0"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.4.0"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@0.1.1/dist/chartjs-chart-financial.min.js"></script>
+    
+    <!-- Memuat Font Google -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Rencana Perubahan:
-    1.  Fondasi (Manajemen Risiko): Menambahkan pilar kelima yaitu "Psikologi Trading" dengan kartu interaktif untuk bias kognitif (FOMO, Loss Aversion). Mengganti grafik Risk/Reward statis dengan Candlestick Chart interaktif di mana SL/TP dapat diseret (drag-and-drop) untuk memperbarui rasio secara dinamis.
-    2.  Perangkat (MT4/5): Mengubah tabel perbandingan statis menjadi perbandingan visual berdampingan yang lebih menarik. Menambahkan kuis interaktif "Platform Mana yang Tepat Untuk Anda?" untuk memberikan rekomendasi berdasarkan input pengguna.
-    3.  Masa Depan (Robo-Advisor): Memperdalam pembahasan dengan menambahkan bagian "Pro & Kontra" yang jelas. Menambahkan visualisasi interaktif alokasi portofolio (Konservatif, Moderat, Agresif) menggunakan Pie Chart dari Chart.js.
-    4.  Visual & UX: Mengganti ikon placeholder dengan SVG inline berkualitas tinggi. Menyempurnakan palet warna, bayangan, dan efek hover untuk tampilan yang lebih premium dan modern. Semua elemen baru akan sepenuhnya responsif dan interaktif.
-    -->
+    
+    <!-- CSS Kustom untuk Tampilan dan Animasi -->
     <style>
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f8fafc; /* slate-50 */
             color: #1e293b; /* slate-800 */
+            overflow-x: hidden;
         }
         .chart-container {
             position: relative;
@@ -31,16 +31,42 @@
             height: 350px;
         }
         @media (min-width: 768px) { .chart-container { height: 450px; } }
+
         .nav-link { transition: color 0.3s, border-bottom-color 0.3s; }
-        .nav-link.active { color: #2563eb; /* blue-600 */ border-bottom-color: #2563eb; }
-        .expand-content { max-height: 0; overflow: hidden; transition: max-height 0.5s ease-in-out; }
-        .expand-content.show { max-height: 500px; }
+        .nav-link.active { color: #2563eb; border-bottom-color: #2563eb; }
+
         .card-hover-effect { transition: transform 0.3s ease, box-shadow 0.3s ease; }
         .card-hover-effect:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); }
+        
         .tab-button.active { background-color: #2563eb; color: white; }
+        
         .pie-chart-container { display: none; }
         .pie-chart-container.active { display: block; }
-        #interactiveCandlestickChart { cursor: ns-resize; }
+
+        #quiz-result { transition: opacity 0.5s ease-in-out, max-height 0.5s ease-in-out; max-height: 0; opacity: 0; overflow: hidden; }
+        #quiz-result.show { max-height: 200px; opacity: 1; }
+        
+        .section-wrapper {
+            padding-top: 4rem;
+            padding-bottom: 4rem;
+        }
+        /* [DIUBAH] Section home menjadi lebih besar dan terpusat */
+        #home-section {
+            min-height: calc(100vh - 72px); /* 72px adalah tinggi header */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .lazy-load {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+            transition-delay: 0.2s;
+        }
+        .lazy-load.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
     </style>
 </head>
 <body class="antialiased">
@@ -48,14 +74,15 @@
     <header id="header" class="bg-white/90 backdrop-blur-lg sticky top-0 z-50 shadow-md">
         <div class="container mx-auto px-4">
             <nav class="flex justify-between items-center py-4">
-                <h1 class="text-xl md:text-2xl font-extrabold text-blue-600">Dasbor Trading Modern</h1>
+                <!-- [DIUBAH] Judul di header -->
+                <h1 class="text-xl md:text-2xl font-extrabold text-blue-600">Analisa Fundamental & Teknikal</h1>
                 <div class="hidden lg:flex items-center space-x-8">
                     <a href="#fondasi" class="nav-link text-slate-600 font-semibold border-b-2 border-transparent pb-1 hover:text-blue-600">Fondasi</a>
                     <a href="#perangkat" class="nav-link text-slate-600 font-semibold border-b-2 border-transparent pb-1 hover:text-blue-600">Perangkat</a>
                     <a href="#masa-depan" class="nav-link text-slate-600 font-semibold border-b-2 border-transparent pb-1 hover:text-blue-600">Masa Depan</a>
                     <a href="#kesimpulan" class="nav-link text-slate-600 font-semibold border-b-2 border-transparent pb-1 hover:text-blue-600">Kesimpulan</a>
                 </div>
-                <button id="mobile-menu-button" class="lg:hidden p-2 rounded-md text-slate-600 hover:bg-slate-100">
+                <button id="mobile-menu-button" class="lg:hidden p-2 rounded-md text-slate-600 hover:bg-slate-100" aria-label="Buka menu">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
                 </button>
             </nav>
@@ -68,424 +95,252 @@
         </div>
     </header>
 
-    <main class="container mx-auto px-4 py-8 md:py-12">
+    <main class="container mx-auto px-4">
         
-        <section class="text-center py-12 md:py-20">
-            <h2 class="text-4xl md:text-6xl font-extrabold tracking-tight mb-4 text-slate-900">Strategi Trading Modern</h2>
-            <p class="text-lg md:text-xl text-slate-600 max-w-3xl mx-auto">Sebuah dasbor analitik interaktif yang mengupas integrasi manajemen risiko, psikologi, dan teknologi terkini dalam dunia trading.</p>
-            <p class="mt-4 text-sm text-slate-500">Oleh: Andrian & Aidil Rizky Akbar</p>
-        </section>
+        <!-- [DIUBAH] Section Home disederhanakan -->
+        <div id="home-section" class="section-wrapper">
+            <section class="text-center lazy-load">
+                <h2 class="text-5xl md:text-7xl font-extrabold tracking-tight text-slate-900">Strategi Trading Modern dengan Manajemen Resiko dan Robo Advisor</h2>
+            </section>
+        </div>
 
-        <!-- Bagian Fondasi: Manajemen Risiko + Psikologi -->
-        <section id="fondasi" class="py-16">
-            <div class="text-center mb-12">
-                <span class="text-blue-600 font-semibold tracking-wider">BAGIAN I</span>
-                <h3 class="text-3xl md:text-4xl font-bold mt-2 text-slate-900">Fondasi: Arsitektur Manajemen Risiko & Psikologi</h3>
-                <p class="mt-4 text-lg text-slate-600 max-w-3xl mx-auto">Manajemen risiko bukan hanya tentang angka, tapi juga tentang mengelola pikiran. Mari kita bedah pilar-pilar teknis dan psikologis yang menjadi dasar trading berkelanjutan.</p>
-            </div>
+        <div class="section-wrapper">
+            <section id="fondasi" class="lazy-load">
+                <div class="text-center mb-12">
+                    <span class="text-blue-600 font-semibold tracking-wider">BAGIAN I</span>
+                    <h3 class="text-3xl md:text-4xl font-bold mt-2 text-slate-900">Fondasi: Arsitektur Risiko & Psikologi</h3>
+                    <p class="mt-4 text-lg text-slate-600 max-w-3xl mx-auto">Manajemen risiko bukan hanya tentang angka, tapi juga mengelola pikiran. Mari bedah pilar teknis dan psikologis yang menjadi dasar trading berkelanjutan.</p>
+                </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-12">
-                <!-- Kartu-kartu yang sudah ada, dengan ikon SVG baru -->
-                 <div class="risk-card bg-white p-6 rounded-lg shadow-lg border border-slate-200 card-hover-effect">
-                    <h4 class="text-xl font-bold mb-2 flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>Stop Loss (SL)</h4>
-                    <p class="text-slate-600 text-sm mb-4">Perintah otomatis untuk menutup posisi rugi pada level harga yang telah ditentukan, berfungsi sebagai jaring pengaman modal Anda.</p>
-                </div>
-                 <div class="risk-card bg-white p-6 rounded-lg shadow-lg border border-slate-200 card-hover-effect">
-                    <h4 class="text-xl font-bold mb-2 flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>Take Profit (TP)</h4>
-                    <p class="text-slate-600 text-sm mb-4">Perintah otomatis untuk mengunci keuntungan saat target harga tercapai, melawan sifat serakah yang merusak.</p>
-                </div>
-                <div class="risk-card bg-white p-6 rounded-lg shadow-lg border border-slate-200 card-hover-effect">
-                    <h4 class="text-xl font-bold mb-2 flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg>Risk/Reward Ratio</h4>
-                    <p class="text-slate-600 text-sm mb-4">Perbandingan matematis antara potensi keuntungan (reward) dan potensi kerugian (risk) dari sebuah trade.</p>
-                </div>
-                <div class="risk-card bg-white p-6 rounded-lg shadow-lg border border-slate-200 card-hover-effect">
-                    <h4 class="text-xl font-bold mb-2 flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 13v-1m4 1v-3m4 3V8M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>Position Sizing</h4>
-                    <p class="text-slate-600 text-sm mb-4">Menentukan berapa banyak unit/lot yang harus ditransaksikan berdasarkan persentase risiko dari total modal.</p>
-                </div>
-                 <!-- Kartu Baru: Psikologi -->
-                <div class="risk-card bg-white p-6 rounded-lg shadow-lg border border-slate-200 card-hover-effect">
-                    <h4 class="text-xl font-bold mb-2 flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M15 21v-2a4 4 0 00-4-4H9a4 4 0 00-4 4v2"/></svg>Psikologi Trading</h4>
-                    <p class="text-slate-600 text-sm mb-4">Mengelola bias kognitif dan emosi adalah medan pertempuran utama untuk mencapai konsistensi.</p>
-                </div>
-            </div>
-            
-            <!-- SUB-TOPIK BARU: Psikologi Trading -->
-            <div class="mt-10 p-6 bg-slate-50 rounded-lg">
-                <h4 class="text-2xl font-bold mb-6 text-center text-slate-800">Kenali Musuh Internal Anda: Bias Psikologis</h4>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="p-5 bg-white rounded-lg shadow-md border border-slate-200">
-                        <h5 class="font-bold text-lg text-red-600">FOMO (Fear of Missing Out)</h5>
-                        <p class="text-sm text-slate-600 mt-2">Rasa takut ketinggalan pergerakan besar, yang memicu keputusan impulsif untuk masuk pasar tanpa analisis yang matang, seringkali di harga puncak.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-12">
+                     <div class="risk-card bg-white p-6 rounded-lg shadow-lg border border-slate-200 card-hover-effect">
+                        <h4 class="text-xl font-bold mb-2 flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>Stop Loss (SL)</h4>
+                        <p class="text-slate-600 text-sm mb-4">Perintah otomatis untuk menutup posisi rugi, berfungsi sebagai jaring pengaman modal Anda.</p>
                     </div>
-                    <div class="p-5 bg-white rounded-lg shadow-md border border-slate-200">
-                        <h5 class="font-bold text-lg text-blue-600">Loss Aversion</h5>
-                        <p class="text-sm text-slate-600 mt-2">Kecenderungan merasakan sakit dari kerugian dua kali lebih kuat daripada kesenangan dari keuntungan yang setara, menyebabkan trader menahan posisi rugi terlalu lama.</p>
+                    <div class="risk-card bg-white p-6 rounded-lg shadow-lg border border-slate-200 card-hover-effect">
+                        <h4 class="text-xl font-bold mb-2 flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>Take Profit (TP)</h4>
+                        <p class="text-slate-600 text-sm mb-4">Perintah otomatis untuk mengunci keuntungan saat target harga tercapai.</p>
                     </div>
-                    <div class="p-5 bg-white rounded-lg shadow-md border border-slate-200">
-                        <h5 class="font-bold text-lg text-green-600">Confirmation Bias</h5>
-                        <p class="text-sm text-slate-600 mt-2">Hanya mencari informasi yang mendukung ide trading kita dan mengabaikan data yang bertentangan. Ini menciptakan 'echo chamber' yang berbahaya.</p>
+                    <div class="risk-card bg-white p-6 rounded-lg shadow-lg border border-slate-200 card-hover-effect">
+                        <h4 class="text-xl font-bold mb-2 flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg>Risk/Reward Ratio</h4>
+                        <p class="text-slate-600 text-sm mb-4">Perbandingan matematis antara potensi keuntungan dan potensi kerugian dari sebuah trade.</p>
+                    </div>
+                    <div class="risk-card bg-white p-6 rounded-lg shadow-lg border border-slate-200 card-hover-effect">
+                        <h4 class="text-xl font-bold mb-2 flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 13v-1m4 1v-3m4 3V8M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>Position Sizing</h4>
+                        <p class="text-slate-600 text-sm mb-4">Menentukan jumlah unit/lot berdasarkan persentase risiko dari total modal.</p>
+                    </div>
+                    <div class="risk-card bg-white p-6 rounded-lg shadow-lg border border-slate-200 card-hover-effect">
+                        <h4 class="text-xl font-bold mb-2 flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M15 21v-2a4 4 0 00-4-4H9a4 4 0 00-4 4v2"/></svg>Psikologi Trading</h4>
+                        <p class="text-slate-600 text-sm mb-4">Mengelola bias kognitif dan emosi adalah medan pertempuran utama untuk konsistensi.</p>
                     </div>
                 </div>
-            </div>
+                
+                <div class="mt-10 p-6 bg-slate-50 rounded-lg">
+                     <h4 class="text-2xl font-bold mb-6 text-center text-slate-800">Kenali Musuh Internal Anda: Bias Psikologis</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="p-5 bg-white rounded-lg shadow-md border border-slate-200"><h5 class="font-bold text-lg text-red-600">FOMO (Fear of Missing Out)</h5><p class="text-sm text-slate-600 mt-2">Rasa takut ketinggalan pergerakan besar, yang memicu keputusan impulsif untuk masuk pasar tanpa analisis matang.</p></div>
+                        <div class="p-5 bg-white rounded-lg shadow-md border border-slate-200"><h5 class="font-bold text-lg text-blue-600">Loss Aversion</h5><p class="text-sm text-slate-600 mt-2">Kecenderungan merasakan sakit dari kerugian dua kali lebih kuat daripada kesenangan dari keuntungan yang setara.</p></div>
+                        <div class="p-5 bg-white rounded-lg shadow-md border border-slate-200"><h5 class="font-bold text-lg text-green-600">Confirmation Bias</h5><p class="text-sm text-slate-600 mt-2">Hanya mencari informasi yang mendukung ide trading kita dan mengabaikan data yang bertentangan.</p></div>
+                    </div>
+                </div>
 
-            <!-- Kalkulator & Grafik Interaktif BARU -->
-            <div class="grid lg:grid-cols-5 gap-8 items-start mt-16">
-                <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-xl border border-slate-200">
-                    <h4 class="text-xl font-bold mb-4 text-slate-900">Kalkulator Sizing Posisi</h4>
-                     <p class="text-sm text-slate-600 mb-6">Simulasikan ukuran posisi ideal Anda berdasarkan toleransi risiko.</p>
-                    <div class="space-y-4">
-                        <div>
-                            <label for="balance" class="block text-sm font-medium text-slate-700">Modal Akun ($)</label>
-                            <input type="number" id="balance" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" value="10000">
-                        </div>
-                        <div>
-                            <label for="risk" class="block text-sm font-medium text-slate-700">Risiko per Trade (%)</label>
-                            <input type="number" id="risk" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" value="1">
-                        </div>
-                        <div>
-                            <label for="stoploss" class="block text-sm font-medium text-slate-700">Jarak Stop Loss (Pips)</label>
-                            <input type="number" id="stoploss" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" value="20">
-                        </div>
+                <div class="grid lg:grid-cols-5 gap-8 items-start mt-16">
+                    <!-- [DIUBAH] Kalkulator diganti menjadi penjelasan konsep -->
+                    <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-xl border border-slate-200">
+                        <h4 class="text-xl font-bold mb-4 text-slate-900">Kekuatan Risk/Reward Jangka Panjang</h4>
+                        <p class="text-sm text-slate-600 mb-4">Rasio Risk/Reward (RR) yang baik adalah kunci profitabilitas konsisten, bahkan jika tingkat kemenangan (win rate) Anda tidak tinggi.</p>
+                        <ul class="space-y-3 text-sm text-slate-700">
+                            <li class="flex items-start">
+                                <span class="text-blue-500 mr-3 font-bold">✔</span>
+                                <div><strong>Probabilitas Positif:</strong> Dengan RR 1:2, Anda hanya perlu benar 1 dari 3 kali untuk impas (breakeven). Setiap kemenangan setelah itu adalah profit.</div>
+                            </li>
+                             <li class="flex items-start">
+                                <span class="text-blue-500 mr-3 font-bold">✔</span>
+                                <div><strong>Mengelola Kerugian:</strong> RR yang baik secara sistematis membatasi kerugian dan membiarkan keuntungan berjalan, melindungi modal dari kerugian besar yang tak terduga.</div>
+                            </li>
+                        </ul>
                     </div>
-                    <div class="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200 text-center">
-                        <p class="text-sm text-blue-800">Ukuran Posisi Direkomendasikan:</p>
-                        <p id="position-size-result" class="text-2xl font-bold text-blue-600 mt-1">0.50 Lot</p>
-                    </div>
-                </div>
-                <div class="lg:col-span-3">
-                    <div class="bg-white p-4 rounded-lg shadow-xl border border-slate-200">
-                         <h4 class="text-xl font-bold mb-2 text-slate-900 text-center">Visualisasi Risk/Reward Interaktif</h4>
-                         <p class="text-sm text-slate-500 text-center mb-2">Klik & seret garis merah (SL) atau hijau (TP) pada grafik untuk mengubah rasio.</p>
-                        <div class="chart-container">
-                            <canvas id="interactiveCandlestickChart"></canvas>
-                        </div>
-                        <div class="text-center mt-4 p-3 bg-slate-100 rounded-md">
-                             <p id="rr-ratio-text" class="font-semibold text-lg text-slate-700">Rasio Risk/Reward saat ini: 1 : 2.00</p>
+                    <!-- [DIUBAH] Chart menjadi statis -->
+                    <div class="lg:col-span-3">
+                        <div class="bg-white p-4 rounded-lg shadow-xl border border-slate-200">
+                             <h4 class="text-xl font-bold mb-2 text-slate-900 text-center">Visualisasi Risk/Reward Statis</h4>
+                             <p class="text-sm text-slate-500 text-center mb-2">Contoh setup trading dengan rasio yang menguntungkan.</p>
+                            <div class="chart-container">
+                                <canvas id="staticCandlestickChart"></canvas>
+                            </div>
+                            <div class="text-center mt-4 p-3 bg-slate-100 rounded-md">
+                                 <p id="rr-ratio-text" class="font-semibold text-lg text-slate-700">Contoh Rasio Risk/Reward: 1 : 2.5</p>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
+        </div>
         
-        <!-- Bagian Perangkat: MT4 vs MT5 + Kuis -->
-        <section id="perangkat" class="py-16 bg-slate-100 -mx-4 px-4 rounded-2xl">
-            <div class="container mx-auto">
+        <div class="section-wrapper bg-slate-100/70 -mx-4 px-4 rounded-2xl">
+            <section id="perangkat" class="lazy-load container mx-auto">
                 <div class="text-center mb-12">
                     <span class="text-blue-600 font-semibold tracking-wider">BAGIAN II</span>
                     <h3 class="text-3xl md:text-4xl font-bold mt-2 text-slate-900">Perangkat Trading: Ekosistem MetaTrader</h3>
                     <p class="mt-4 text-lg text-slate-600 max-w-3xl mx-auto">MetaTrader bukan sekadar platform, melainkan jembatan ke pasar global. Mari bedah perbedaan kunci dan temukan yang paling cocok untuk Anda.</p>
                 </div>
-
-                <!-- Perbandingan Visual BARU -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div class="bg-white p-6 rounded-lg shadow-xl border-2 border-blue-500">
-                        <h4 class="text-3xl font-bold text-center mb-4 text-slate-800">MetaTrader 4</h4>
-                        <p class="text-center text-slate-600 mb-6 font-medium">Sang Legenda, Raja Pasar Forex</p>
-                        <ul class="space-y-3">
-                            <li class="flex items-start"><span class="text-green-500 mr-3">✔</span> Sederhana dan sangat ramah bagi pemula.</li>
-                            <li class="flex items-start"><span class="text-green-500 mr-3">✔</span> Ekosistem Expert Advisor (EA) dan indikator kustom terbesar di dunia.</li>
-                            <li class="flex items-start"><span class="text-green-500 mr-3">✔</span> Spesialisasi di trading Forex, teruji dan stabil.</li>
-                            <li class="flex items-start"><span class="text-red-500 mr-3">✖</span> Bahasa MQL4 yang lebih tua (prosedural).</li>
-                            <li class="flex items-start"><span class="text-red-500 mr-3">✖</span> Pilihan time frame dan indikator bawaan yang lebih terbatas.</li>
-                        </ul>
-                    </div>
-                     <div class="bg-white p-6 rounded-lg shadow-xl border border-slate-200">
-                        <h4 class="text-3xl font-bold text-center mb-4 text-slate-800">MetaTrader 5</h4>
-                        <p class="text-center text-slate-600 mb-6 font-medium">Sang Penerus, Platform Multi-Aset Modern</p>
-                         <ul class="space-y-3">
-                            <li class="flex items-start"><span class="text-green-500 mr-3">✔</span> Mendukung lebih banyak aset: Saham, Futures, dan Options.</li>
-                            <li class="flex items-start"><span class="text-green-500 mr-3">✔</span> Bahasa MQL5 yang lebih canggih (object-oriented) dan cepat.</li>
-                            <li class="flex items-start"><span class="text-green-500 mr-3">✔</span> Lebih banyak time frame (21), indikator (38), dan tipe order.</li>
-                            <li class="flex items-start"><span class="text-green-500 mr-3">✔</span> Dilengkapi Kalender Ekonomi dan Depth of Market (DOM).</li>
-                            <li class="flex items-start"><span class="text-red-500 mr-3">✖</span> Komunitas EA dan indikator belum sebesar MT4.</li>
-                        </ul>
-                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-xl border-2 border-blue-500"><h4 class="text-3xl font-bold text-center mb-4 text-slate-800">MetaTrader 4</h4><p class="text-center text-slate-600 mb-6 font-medium">Sang Legenda, Raja Pasar Forex</p><ul class="space-y-3"><li class="flex items-start"><span class="text-green-500 mr-3">✔</span> Sederhana dan sangat ramah bagi pemula.</li><li class="flex items-start"><span class="text-green-500 mr-3">✔</span> Ekosistem Expert Advisor (EA) dan indikator kustom terbesar.</li><li class="flex items-start"><span class="text-green-500 mr-3">✔</span> Spesialisasi di trading Forex, teruji dan stabil.</li><li class="flex items-start"><span class="text-red-500 mr-3">✖</span> Bahasa MQL4 yang lebih tua (prosedural).</li><li class="flex items-start"><span class="text-red-500 mr-3">✖</span> Pilihan time frame & indikator bawaan terbatas.</li></ul></div>
+                    <div class="bg-white p-6 rounded-lg shadow-xl border border-slate-200"><h4 class="text-3xl font-bold text-center mb-4 text-slate-800">MetaTrader 5</h4><p class="text-center text-slate-600 mb-6 font-medium">Penerus Multi-Aset yang Modern</p><ul class="space-y-3"><li class="flex items-start"><span class="text-green-500 mr-3">✔</span> Mendukung lebih banyak aset: Saham, Futures, Options.</li><li class="flex items-start"><span class="text-green-500 mr-3">✔</span> Bahasa MQL5 yang lebih canggih (object-oriented).</li><li class="flex items-start"><span class="text-green-500 mr-3">✔</span> Lebih banyak time frame (21) dan tipe order.</li><li class="flex items-start"><span class="text-green-500 mr-3">✔</span> Dilengkapi Kalender Ekonomi dan Depth of Market (DOM).</li><li class="flex items-start"><span class="text-red-500 mr-3">✖</span> Komunitas EA & indikator belum sebesar MT4.</li></ul></div>
                 </div>
-
-                <!-- Kuis Interaktif BARU -->
                 <div class="mt-16 bg-white p-8 rounded-lg shadow-2xl border border-slate-200">
                     <h4 class="text-2xl font-bold mb-6 text-center text-slate-900">Platform Mana yang Tepat Untuk Anda?</h4>
-                    <div id="quiz-container" class="space-y-5">
-                        <div>
-                            <p class="font-semibold text-slate-700">1. Apa fokus utama trading Anda?</p>
-                            <div class="mt-2 space-y-1">
-                                <label class="flex items-center"><input type="radio" name="focus" value="mt4" class="mr-2">Hanya Forex.</label>
-                                <label class="flex items-center"><input type="radio" name="focus" value="mt5" class="mr-2">Forex, Saham, dan aset lainnya.</label>
-                            </div>
-                        </div>
-                        <div>
-                            <p class="font-semibold text-slate-700">2. Seberapa penting penggunaan robot trading (EA) dari komunitas bagi Anda?</p>
-                            <div class="mt-2 space-y-1">
-                                <label class="flex items-center"><input type="radio" name="ea" value="mt4" class="mr-2">Sangat penting, saya butuh banyak pilihan.</label>
-                                <label class="flex items-center"><input type="radio" name="ea" value="mt5" class="mr-2">Tidak terlalu, saya mungkin akan membuat sendiri atau trading manual.</label>
-                            </div>
-                        </div>
-                         <div>
-                            <p class="font-semibold text-slate-700">3. Apakah Anda memerlukan fitur analisis mendalam seperti Depth of Market (DOM)?</p>
-                            <div class="mt-2 space-y-1">
-                                <label class="flex items-center"><input type="radio"name="features" value="mt4" class="mr-2">Tidak, analisa standar sudah cukup.</label>
-                                <label class="flex items-center"><input type="radio" name="features" value="mt5" class="mr-2">Ya, saya butuh perangkat analisis canggih.</label>
-                            </div>
-                        </div>
+                    <div id="quiz-container" class="space-y-5 max-w-lg mx-auto">
+                        <div><p class="font-semibold text-slate-700">1. Apa fokus utama trading Anda?</p><div class="mt-2 space-y-1"><label class="flex items-center p-2 rounded-md hover:bg-slate-100 cursor-pointer"><input type="radio" name="focus" value="mt4" class="mr-3">Hanya Forex.</label><label class="flex items-center p-2 rounded-md hover:bg-slate-100 cursor-pointer"><input type="radio" name="focus" value="mt5" class="mr-3">Forex, Saham, dan aset lainnya.</label></div></div>
+                        <div><p class="font-semibold text-slate-700">2. Seberapa penting penggunaan robot (EA) dari komunitas bagi Anda?</p><div class="mt-2 space-y-1"><label class="flex items-center p-2 rounded-md hover:bg-slate-100 cursor-pointer"><input type="radio" name="ea" value="mt4" class="mr-3">Sangat penting, saya butuh banyak pilihan.</label><label class="flex items-center p-2 rounded-md hover:bg-slate-100 cursor-pointer"><input type="radio" name="ea" value="mt5" class="mr-3">Tidak terlalu, saya trading manual/buat sendiri.</label></div></div>
+                        <div><p class="font-semibold text-slate-700">3. Apakah Anda memerlukan fitur analisis mendalam seperti DOM?</p><div class="mt-2 space-y-1"><label class="flex items-center p-2 rounded-md hover:bg-slate-100 cursor-pointer"><input type="radio"name="features" value="mt4" class="mr-3">Tidak, analisa standar sudah cukup.</label><label class="flex items-center p-2 rounded-md hover:bg-slate-100 cursor-pointer"><input type="radio" name="features" value="mt5" class="mr-3">Ya, saya butuh perangkat analisis canggih.</label></div></div>
                     </div>
-                    <div id="quiz-result" class="mt-8 p-5 bg-blue-50 rounded-lg border border-blue-200 text-center hidden">
-                        <h5 class="font-bold text-xl text-blue-800">Rekomendasi Kami:</h5>
-                        <p id="recommendation" class="text-2xl font-extrabold text-blue-600 mt-2"></p>
-                        <p id="recommendation-reason" class="text-slate-600 mt-1"></p>
-                    </div>
+                    <div id="quiz-result" class="mt-8 p-5 bg-blue-50 rounded-lg border border-blue-200 text-center"><h5 class="font-bold text-xl text-blue-800">Rekomendasi Kami:</h5><p id="recommendation" class="text-2xl font-extrabold text-blue-600 mt-2"></p><p id="recommendation-reason" class="text-slate-600 mt-1"></p></div>
                 </div>
-            </div>
-        </section>
+            </section>
+        </div>
         
-        <!-- Bagian Masa Depan: Robo-Advisor dengan Pro/Kontra & Portofolio -->
-        <section id="masa-depan" class="py-16">
-            <div class="text-center mb-12">
-                <span class="text-blue-600 font-semibold tracking-wider">BAGIAN III</span>
-                <h3 class="text-3xl md:text-4xl font-bold mt-2 text-slate-900">Masa Depan: Investasi Terotomatisasi</h3>
-                <p class="mt-4 text-lg text-slate-600 max-w-3xl mx-auto">Robo-Advisors mendemokratisasi investasi dengan algoritma, namun penting untuk memahami kelebihan dan kekurangannya sebelum terjun.</p>
-            </div>
-            
-            <div class="bg-white p-6 md:p-8 rounded-lg shadow-xl border border-slate-200 mb-12">
-                <h4 class="text-2xl font-semibold mb-6 text-center text-slate-900">Cara Kerja Robo-Advisor</h4>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                    <!-- Steps here -->
+        <div class="section-wrapper">
+            <section id="masa-depan" class="lazy-load">
+                <div class="text-center mb-12">
+                    <span class="text-blue-600 font-semibold tracking-wider">BAGIAN III</span>
+                    <h3 class="text-3xl md:text-4xl font-bold mt-2 text-slate-900">Masa Depan: Investasi Terotomatisasi</h3>
+                    <p class="mt-4 text-lg text-slate-600 max-w-3xl mx-auto">Robo-Advisor mendemokratisasi investasi dengan algoritma, namun penting untuk memahami kelebihan dan kekurangannya.</p>
                 </div>
-            </div>
-
-            <!-- Pro & Kontra BARU -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
-                <div class="bg-white p-6 rounded-lg shadow-lg border border-slate-200">
-                    <h4 class="text-2xl font-bold text-center mb-4 text-green-600">Keunggulan (Pro)</h4>
-                    <ul class="space-y-3">
-                        <li class="flex items-start"><svg class="w-6 h-6 mr-3 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><div><span class="font-semibold">Biaya Rendah:</span> Jauh lebih murah daripada manajer investasi manusia.</div></li>
-                        <li class="flex items-start"><svg class="w-6 h-6 mr-3 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><div><span class="font-semibold">Aksesibilitas:</span> Modal awal yang rendah, cocok untuk investor pemula.</div></li>
-                        <li class="flex items-start"><svg class="w-6 h-6 mr-3 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><div><span class="font-semibold">Disiplin:</span> Bekerja berdasarkan logika & data, menghilangkan emosi dari keputusan investasi.</div></li>
-                    </ul>
-                </div>
-                <div class="bg-white p-6 rounded-lg shadow-lg border border-slate-200">
-                    <h4 class="text-2xl font-bold text-center mb-4 text-red-600">Keterbatasan (Kontra)</h4>
-                    <ul class="space-y-3">
-                         <li class="flex items-start"><svg class="w-6 h-6 mr-3 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><div><span class="font-semibold">Kurang Fleksibel:</span> Strategi investasi yang ditawarkan terbatas dan terstandarisasi.</div></li>
-                         <li class="flex items-start"><svg class="w-6 h-6 mr-3 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><div><span class="font-semibold">Minim Interaksi Manusia:</span> Tidak ada konsultasi mendalam untuk situasi finansial yang kompleks.</div></li>
-                         <li class="flex items-start"><svg class="w-6 h-6 mr-3 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><div><span class="font-semibold">Kinerja Terbatas Pasar:</span> Tidak bisa mengalahkan pasar secara signifikan, hanya mengikuti indeks (passive investing).</div></li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- Portofolio Interaktif BARU -->
-            <div class="bg-white p-8 rounded-lg shadow-2xl border border-slate-200">
-                <h4 class="text-2xl font-bold mb-2 text-center text-slate-900">Contoh Alokasi Portofolio Robo-Advisor</h4>
-                <p class="text-center text-slate-600 mb-6">Pilih profil risiko untuk melihat contoh alokasi aset.</p>
-                <div id="portfolio-tabs" class="flex justify-center mb-6 bg-slate-100 p-1.5 rounded-lg">
-                    <button data-portfolio="conservative" class="tab-button active w-full md:w-auto px-4 py-2 text-sm font-semibold rounded-md transition-colors">Konservatif</button>
-                    <button data-portfolio="moderate" class="tab-button w-full md:w-auto px-4 py-2 text-sm font-semibold rounded-md transition-colors">Moderat</button>
-                    <button data-portfolio="aggressive" class="tab-button w-full md:w-auto px-4 py-2 text-sm font-semibold rounded-md transition-colors">Agresif</button>
-                </div>
-                <div class="relative w-full h-80">
-                    <div id="conservative-chart" class="pie-chart-container active absolute inset-0">
-                        <canvas id="conservativePie"></canvas>
-                    </div>
-                    <div id="moderate-chart" class="pie-chart-container absolute inset-0">
-                        <canvas id="moderatePie"></canvas>
-                    </div>
-                    <div id="aggressive-chart" class="pie-chart-container absolute inset-0">
-                        <canvas id="aggressivePie"></canvas>
+                <div class="bg-white p-6 md:p-8 rounded-lg shadow-xl border border-slate-200 mb-12">
+                    <h4 class="text-2xl font-semibold mb-6 text-center text-slate-900">Cara Kerja Robo-Advisor dalam 3 Langkah</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                        <div class="step"><div class="flex items-center justify-center bg-blue-100 text-blue-600 w-16 h-16 rounded-full mx-auto mb-4 text-2xl font-bold">1</div><h5 class="font-bold text-lg mb-2">Kuesioner Profil Risiko</h5><p class="text-sm text-slate-600">Anda menjawab serangkaian pertanyaan untuk menentukan tujuan, jangka waktu, dan toleransi risiko Anda.</p></div>
+                        <div class="step"><div class="flex items-center justify-center bg-blue-100 text-blue-600 w-16 h-16 rounded-full mx-auto mb-4 text-2xl font-bold">2</div><h5 class="font-bold text-lg mb-2">Alokasi Aset Algoritmik</h5><p class="text-sm text-slate-600">Algoritma secara otomatis membuat dan mengalokasikan portofolio ETF yang terdiversifikasi sesuai profil Anda.</p></div>
+                        <div class="step"><div class="flex items-center justify-center bg-blue-100 text-blue-600 w-16 h-16 rounded-full mx-auto mb-4 text-2xl font-bold">3</div><h5 class="font-bold text-lg mb-2">Rebalancing Otomatis</h5><p class="text-sm text-slate-600">Platform secara berkala menyeimbangkan kembali portofolio Anda untuk menjaga alokasi aset tetap sesuai target.</p></div>
                     </div>
                 </div>
-            </div>
-        </section>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+                    <div class="bg-white p-6 rounded-lg shadow-lg border border-slate-200"><h4 class="text-2xl font-bold text-center mb-4 text-green-600">Keunggulan (Pro)</h4><ul class="space-y-3"><li class="flex items-start"><svg class="w-6 h-6 mr-3 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><div><span class="font-semibold">Biaya Rendah:</span> Jauh lebih murah daripada manajer investasi manusia.</div></li><li class="flex items-start"><svg class="w-6 h-6 mr-3 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><div><span class="font-semibold">Aksesibilitas:</span> Modal awal yang rendah, cocok untuk investor pemula.</div></li><li class="flex items-start"><svg class="w-6 h-6 mr-3 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><div><span class="font-semibold">Disiplin:</span> Bekerja berdasarkan logika & data, menghilangkan emosi dari investasi.</div></li></ul></div>
+                    <div class="bg-white p-6 rounded-lg shadow-lg border border-slate-200"><h4 class="text-2xl font-bold text-center mb-4 text-red-600">Keterbatasan (Kontra)</h4><ul class="space-y-3"><li class="flex items-start"><svg class="w-6 h-6 mr-3 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><div><span class="font-semibold">Kurang Fleksibel:</span> Strategi investasi yang ditawarkan terbatas dan terstandarisasi.</div></li><li class="flex items-start"><svg class="w-6 h-6 mr-3 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><div><span class="font-semibold">Minim Interaksi Manusia:</span> Tidak ada konsultasi mendalam untuk situasi finansial yang kompleks.</div></li><li class="flex items-start"><svg class="w-6 h-6 mr-3 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><div><span class="font-semibold">Kinerja Terbatas Pasar:</span> Cenderung mengikuti indeks (passive investing), bukan mengalahkan pasar.</div></li></ul></div>
+                </div>
+                <div class="bg-white p-8 rounded-lg shadow-2xl border border-slate-200">
+                    <h4 class="text-2xl font-bold mb-2 text-center text-slate-900">Contoh Alokasi Portofolio Robo-Advisor</h4>
+                    <p class="text-center text-slate-600 mb-6">Pilih profil risiko untuk melihat contoh alokasi aset.</p>
+                    <div id="portfolio-tabs" class="flex flex-col sm:flex-row justify-center mb-6 bg-slate-100 p-1.5 rounded-lg max-w-md mx-auto">
+                        <button data-portfolio="conservative" class="tab-button active w-full sm:w-auto flex-1 px-4 py-2 text-sm font-semibold rounded-md transition-colors">Konservatif</button>
+                        <button data-portfolio="moderate" class="tab-button w-full sm:w-auto flex-1 px-4 py-2 text-sm font-semibold rounded-md transition-colors">Moderat</button>
+                        <button data-portfolio="aggressive" class="tab-button w-full sm:w-auto flex-1 px-4 py-2 text-sm font-semibold rounded-md transition-colors">Agresif</button>
+                    </div>
+                    <div class="relative w-full h-80">
+                        <div id="conservative-chart" class="pie-chart-container active absolute inset-0"><canvas id="conservativePie"></canvas></div>
+                        <div id="moderate-chart" class="pie-chart-container absolute inset-0"><canvas id="moderatePie"></canvas></div>
+                        <div id="aggressive-chart" class="pie-chart-container absolute inset-0"><canvas id="aggressivePie"></canvas></div>
+                    </div>
+                </div>
+            </section>
+        </div>
         
-        <!-- Bagian Kesimpulan yang disempurnakan -->
-        <section id="kesimpulan" class="py-16 bg-gradient-to-br from-slate-800 to-slate-900 -mx-4 px-4 rounded-2xl text-white">
-             <div class="container mx-auto">
+        <div class="section-wrapper bg-gradient-to-br from-slate-800 to-slate-900 -mx-4 px-4 rounded-2xl text-white">
+             <section id="kesimpulan" class="lazy-load container mx-auto">
                 <div class="text-center mb-12">
                     <span class="text-blue-400 font-semibold tracking-wider">BAGIAN IV</span>
                     <h3 class="text-3xl md:text-4xl font-bold mt-2">Kesimpulan: Trader Modern sebagai "Cyborg"</h3>
-                    <p class="mt-4 text-lg text-slate-300 max-w-3xl mx-auto">Trader yang unggul di era digital bukanlah manusia melawan mesin, tetapi manusia yang bersinergi dengan mesin. Teknologi tidak menggantikan, melainkan memperkuat intuisi dan disiplin.</p>
+                    <p class="mt-4 text-lg text-slate-300 max-w-3xl mx-auto">Trader yang unggul di era digital bukanlah manusia melawan mesin, tetapi manusia yang bersinergi dengan mesin. Teknologi memperkuat intuisi dan disiplin, bukan menggantikannya.</p>
                 </div>
-                
                 <div class="bg-slate-800/50 p-8 rounded-lg shadow-xl border border-slate-700 max-w-4xl mx-auto">
                     <div class="flex flex-col md:flex-row items-center justify-around gap-8">
-                        <div class="text-center p-6 rounded-lg flex-1">
-                             <svg class="w-20 h-20 mx-auto text-blue-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                             <h4 class="text-xl font-bold">Analis Manusia</h4>
-                             <p class="text-slate-300 mt-2">Menentukan "Why" & "When"</p>
-                             <ul class="text-sm text-slate-400 mt-3 space-y-1 text-left list-disc list-inside">
-                                <li>Analisa Fundamental & Kontekstual</li>
-                                <li>Kreativitas & Intuisi Pasar</li>
-                                <li>Adaptasi Terhadap Perubahan Narasi</li>
-                             </ul>
-                        </div>
+                        <div class="text-center p-6 rounded-lg flex-1"><svg class="w-20 h-20 mx-auto text-blue-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg><h4 class="text-xl font-bold">Analis Manusia</h4><p class="text-slate-300 mt-2">Menentukan "Why" & "When"</p><ul class="text-sm text-slate-400 mt-3 space-y-1 text-left list-disc list-inside"><li>Analisa Fundamental & Kontekstual</li><li>Kreativitas & Intuisi Pasar</li><li>Adaptasi Terhadap Narasi Pasar</li></ul></div>
                         <div class="text-5xl text-blue-500 font-light">+</div>
-                        <div class="text-center p-6 rounded-lg flex-1">
-                            <svg class="w-20 h-20 mx-auto text-blue-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M12 6V3m0 18v-3M10 12h4v4h-4z"></path></svg>
-                            <h4 class="text-xl font-bold">Eksekusi Mesin</h4>
-                            <p class="text-slate-300 mt-2">Menentukan "How Much" & "Execute"</p>
-                             <ul class="text-sm text-slate-400 mt-3 space-y-1 text-left list-disc list-inside">
-                                <li>Kalkulasi Ukuran Posisi Presisi</li>
-                                <li>Eksekusi Tanpa Emosi (SL/TP)</li>
-                                <li>Manajemen Risiko Otomatis</li>
-                             </ul>
-                        </div>
+                        <div class="text-center p-6 rounded-lg flex-1"><svg class="w-20 h-20 mx-auto text-blue-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M12 6V3m0 18v-3M10 12h4v4h-4z"></path></svg><h4 class="text-xl font-bold">Eksekusi Mesin</h4><p class="text-slate-300 mt-2">Menentukan "How Much" & "Execute"</p><ul class="text-sm text-slate-400 mt-3 space-y-1 text-left list-disc list-inside"><li>Kalkulasi Ukuran Posisi Presisi</li><li>Eksekusi Tanpa Emosi (SL/TP)</li><li>Manajemen Risiko Otomatis</li></ul></div>
                     </div>
                 </div>
-            </div>
-        </section>
-
+            </section>
+        </div>
     </main>
 
     <footer class="bg-slate-900 text-white mt-16">
         <div class="container mx-auto px-4 py-8 text-center text-slate-400">
             <p>&copy; 2025 Presentasi oleh Andrian & Aidil Rizky Akbar.</p>
-            <p class="text-sm">Dasbor Analitik Interaktif Ditingkatkan oleh Gemini.</p>
+            <p class="text-sm">Disesuaikan untuk Mata Kuliah Analisa Fundamental & Teknikal.</p>
         </div>
     </footer>
 
     <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // --- Mobile Menu & Nav Logic ---
+        // --- Logika Menu & Navigasi Scrollspy ---
         const mobileMenuButton = document.getElementById('mobile-menu-button');
         const mobileMenu = document.getElementById('mobile-menu');
         mobileMenuButton.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
         document.querySelectorAll('.mobile-nav-link, .nav-link').forEach(link => {
-            link.addEventListener('click', () => mobileMenu.classList.add('hidden'));
+            link.addEventListener('click', () => setTimeout(() => mobileMenu.classList.add('hidden'), 150));
         });
         
         const sections = document.querySelectorAll('section[id]');
         const mainNavLinks = document.querySelectorAll('nav a.nav-link');
-        window.addEventListener('scroll', () => {
+        const onScroll = () => {
             const scrollPos = window.scrollY + 150;
-            let activeSection = null;
+            let activeSectionId = null;
             sections.forEach(section => {
                 if (section.offsetTop <= scrollPos && (section.offsetTop + section.offsetHeight) > scrollPos) {
-                    activeSection = section.getAttribute('id');
+                    activeSectionId = section.id;
                 }
             });
             mainNavLinks.forEach(link => {
                 link.classList.remove('active');
-                if (link.getAttribute('href').substring(1) === activeSection) {
+                if (link.getAttribute('href') === `#${activeSectionId}`) {
                     link.classList.add('active');
                 }
             });
+        };
+        window.addEventListener('scroll', onScroll);
+
+        // --- Logika Animasi Lazy Loading ---
+        const lazyLoadObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.15 });
+
+        document.querySelectorAll('.lazy-load').forEach(el => lazyLoadObserver.observe(el));
+
+        // --- [DIUBAH] Grafik Candlestick menjadi Statis ---
+        const staticCandleCtx = document.getElementById('staticCandlestickChart').getContext('2d');
+        const candleData = Array.from({length: 15}, (_, i) => {
+            const time = new Date('2025-10-01T10:00:00Z').getTime() + i * 3600 * 1000;
+            const o = 1.1250 + i * 0.0005 + Math.random() * 0.0005;
+            const h = o + Math.random() * 0.0015;
+            const l = o - Math.random() * 0.0015;
+            const c = l + Math.random() * (h - l);
+            return { t: time, o, h, l, c };
         });
-
-        // --- Position Sizing Calculator ---
-        const balanceInput = document.getElementById('balance');
-        const riskInput = document.getElementById('risk');
-        const stoplossInput = document.getElementById('stoploss');
-        const resultDisplay = document.getElementById('position-size-result');
-
-        function calculatePositionSize() {
-            const balance = parseFloat(balanceInput.value) || 0;
-            const riskPercent = parseFloat(riskInput.value) || 0;
-            const stoplossPips = parseFloat(stoplossInput.value) || 0;
-            const pipValuePerLot = 10;
-            if (stoplossPips <= 0) {
-                resultDisplay.textContent = '-';
-                return;
-            }
-            const riskAmount = balance * (riskPercent / 100);
-            const positionSize = (riskAmount / stoplossPips) / pipValuePerLot;
-            resultDisplay.textContent = `${positionSize.toFixed(2)} Lot`;
-        }
-        [balanceInput, riskInput, stoplossInput].forEach(input => input.addEventListener('input', calculatePositionSize));
-        calculatePositionSize();
-
-        // --- Interactive Candlestick Chart ---
-        const rrRatioText = document.getElementById('rr-ratio-text');
-        const canvas = document.getElementById('interactiveCandlestickChart');
-        const ctx = canvas.getContext('2d');
         
-        let candleData = [
-            { t: new Date('2025-10-01T10:00:00Z').getTime(), o: 1.1250, h: 1.1265, l: 1.1245, c: 1.1260 },
-            { t: new Date('2025-10-01T11:00:00Z').getTime(), o: 1.1260, h: 1.1275, l: 1.1255, c: 1.1270 },
-            { t: new Date('2025-10-01T12:00:00Z').getTime(), o: 1.1270, h: 1.1285, l: 1.1268, c: 1.1280 },
-            { t: new Date('2025-10-01T13:00:00Z').getTime(), o: 1.1280, h: 1.1295, l: 1.1278, c: 1.1290 },
-            { t: new Date('2025-10-01T14:00:00Z').getTime(), o: 1.1290, h: 1.1315, l: 1.1288, c: 1.1310 },
-            { t: new Date('2025-10-01T15:00:00Z').getTime(), o: 1.1310, h: 1.1312, l: 1.1295, c: 1.1300 },
-        ];
-
-        let entryPrice = 1.1285;
-        let stopLossPrice = 1.1265;
-        let takeProfitPrice = 1.1325;
-        let dragging = null;
-
-        function updateRiskRewardRatio() {
-            const risk = entryPrice - stopLossPrice;
-            const reward = takeProfitPrice - entryPrice;
-            if (risk > 0) {
-                const ratio = reward / risk;
-                rrRatioText.textContent = `Rasio Risk/Reward saat ini: 1 : ${ratio.toFixed(2)}`;
-            } else {
-                 rrRatioText.textContent = 'Rasio tidak valid';
-            }
-        }
+        const entryPrice = 1.1285;
+        const stopLossPrice = 1.1260; // Disesuaikan untuk rasio 1:2.5
+        const takeProfitPrice = 1.13475; // (1.1285 - 1.1260) * 2.5 + 1.1285
         
-        const chart = new Chart(ctx, {
+        new Chart(staticCandleCtx, {
             type: 'candlestick',
-            data: {
-                datasets: [{
-                    label: 'EUR/USD',
-                    data: candleData
-                }]
-            },
+            data: { datasets: [{ label: 'EUR/USD', data: candleData }] },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                scales: {
-                    x: { type: 'time', time: { unit: 'hour' } },
-                    y: { title: { display: true, text: 'Harga' } }
+                scales: { 
+                    x: { type: 'time', time: { unit: 'hour' }, grid: { display: false } }, 
+                    y: { title: { display: true, text: 'Harga' } } 
                 },
                 plugins: {
                     legend: { display: false },
                     annotation: {
                         annotations: {
                             entryLine: { type: 'line', yMin: entryPrice, yMax: entryPrice, borderColor: 'rgb(59, 130, 246)', borderWidth: 2, label: { content: `Entry @ ${entryPrice.toFixed(4)}`, enabled: true, position: 'end', backgroundColor: 'rgba(59, 130, 246, 0.8)' } },
-                            stopLossLine: { type: 'line', yMin: stopLossPrice, yMax: stopLossPrice, borderColor: 'rgb(239, 68, 68)', borderWidth: 3, label: { content: () => `SL @ ${stopLossPrice.toFixed(4)}`, enabled: true, position: 'start', backgroundColor: 'rgba(239, 68, 68, 0.8)' } },
-                            takeProfitLine: { type: 'line', yMin: takeProfitPrice, yMax: takeProfitPrice, borderColor: 'rgb(34, 197, 94)', borderWidth: 3, label: { content: () => `TP @ ${takeProfitPrice.toFixed(4)}`, enabled: true, position: 'start', backgroundColor: 'rgba(34, 197, 94, 0.8)' } }
+                            stopLossLine: { type: 'line', yMin: stopLossPrice, yMax: stopLossPrice, borderColor: 'rgb(239, 68, 68)', borderWidth: 2, label: { content: () => `SL @ ${stopLossPrice.toFixed(4)}`, enabled: true, position: 'start', backgroundColor: 'rgba(239, 68, 68, 0.8)' } },
+                            takeProfitLine: { type: 'line', yMin: takeProfitPrice, yMax: takeProfitPrice, borderColor: 'rgb(34, 197, 94)', borderWidth: 2, label: { content: () => `TP @ ${takeProfitPrice.toFixed(4)}`, enabled: true, position: 'start', backgroundColor: 'rgba(34, 197, 94, 0.8)' } }
                         }
                     }
                 }
             }
         });
 
-        canvas.addEventListener('mousedown', (e) => {
-            const rect = canvas.getBoundingClientRect();
-            const y = e.clientY - rect.top;
-            const scale = chart.scales.y;
-            const price = scale.getValueForPixel(y);
-            
-            const slPixel = scale.getPixelForValue(stopLossPrice);
-            const tpPixel = scale.getPixelForValue(takeProfitPrice);
-
-            if (Math.abs(y - slPixel) < 10) dragging = 'sl';
-            else if (Math.abs(y - tpPixel) < 10) dragging = 'tp';
-        });
-
-        canvas.addEventListener('mousemove', (e) => {
-            if (!dragging) return;
-            const rect = canvas.getBoundingClientRect();
-            const y = e.clientY - rect.top;
-            const price = chart.scales.y.getValueForPixel(y);
-
-            if (dragging === 'sl') {
-                stopLossPrice = price;
-                chart.options.plugins.annotation.annotations.stopLossLine.yMin = price;
-                chart.options.plugins.annotation.annotations.stopLossLine.yMax = price;
-            } else if (dragging === 'tp') {
-                takeProfitPrice = price;
-                chart.options.plugins.annotation.annotations.takeProfitLine.yMin = price;
-                chart.options.plugins.annotation.annotations.takeProfitLine.yMax = price;
-            }
-            chart.update('none');
-            updateRiskRewardRatio();
-        });
-
-        canvas.addEventListener('mouseup', () => dragging = null);
-        canvas.addEventListener('mouseleave', () => dragging = null);
-        updateRiskRewardRatio();
-
-        // --- Platform Quiz Logic ---
+        // --- Logika Kuis Platform ---
         const quizContainer = document.getElementById('quiz-container');
         const quizResult = document.getElementById('quiz-result');
         const recommendation = document.getElementById('recommendation');
@@ -497,12 +352,10 @@
                 features: document.querySelector('input[name="features"]:checked'),
             };
             if (!answers.focus || !answers.ea || !answers.features) return;
-
             let mt5_score = 0;
             if (answers.focus.value === 'mt5') mt5_score++;
             if (answers.ea.value === 'mt5') mt5_score++;
             if (answers.features.value === 'mt5') mt5_score++;
-
             if (mt5_score >= 2) {
                 recommendation.textContent = 'MetaTrader 5';
                 recommendationReason.textContent = 'Anda membutuhkan fleksibilitas multi-aset dan fitur analisis canggih.';
@@ -510,67 +363,44 @@
                 recommendation.textContent = 'MetaTrader 4';
                 recommendationReason.textContent = 'Anda fokus pada kesederhanaan, stabilitas, dan ekosistem Forex yang matang.';
             }
-            quizResult.classList.remove('hidden');
+            quizResult.classList.add('show');
         });
 
-        // --- Robo-Advisor Pie Charts ---
+        // --- Logika Pie Chart Robo-Advisor ---
         const portfolioTabs = document.getElementById('portfolio-tabs');
         const pieChartContainers = document.querySelectorAll('.pie-chart-container');
         const pieChartConfigs = {
-            conservative: {
-                labels: ['Obligasi Pemerintah', 'Obligasi Korporasi', 'Saham Blue Chip'],
-                data: [50, 30, 20],
-                colors: ['#60a5fa', '#3b82f6', '#1d4ed8']
-            },
-            moderate: {
-                labels: ['Saham Global', 'Obligasi', 'Real Estate (REITs)'],
-                data: [50, 30, 20],
-                colors: ['#fbbf24', '#f59e0b', '#b45309']
-            },
-            aggressive: {
-                labels: ['Saham Teknologi', 'Saham Pasar Berkembang', 'Mata Uang Kripto'],
-                data: [60, 30, 10],
-                colors: ['#f87171', '#ef4444', '#b91c1c']
-            }
+            conservative: { labels: ['Obligasi Pemerintah', 'Obligasi Korporasi', 'Saham Blue Chip'], data: [50, 30, 20], colors: ['#60a5fa', '#3b82f6', '#1d4ed8'] },
+            moderate: { labels: ['Saham Global', 'Obligasi', 'Real Estate (REITs)'], data: [50, 30, 20], colors: ['#fbbf24', '#f59e0b', '#b45309'] },
+            aggressive: { labels: ['Saham Teknologi', 'Saham Pasar Berkembang', 'Kripto'], data: [60, 30, 10], colors: ['#f87171', '#ef4444', '#b91c1c'] }
         };
 
+        let createdCharts = {};
         function createPieChart(canvasId, config) {
-            new Chart(document.getElementById(canvasId).getContext('2d'), {
+            if (createdCharts[canvasId]) return;
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            createdCharts[canvasId] = new Chart(ctx, {
                 type: 'pie',
                 data: {
                     labels: config.labels,
-                    datasets: [{
-                        data: config.data,
-                        backgroundColor: config.colors,
-                        borderColor: '#f8fafc',
-                        borderWidth: 2
-                    }]
+                    datasets: [{ data: config.data, backgroundColor: config.colors, borderColor: '#f8fafc', borderWidth: 2 }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'bottom' }
-                    }
-                }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
             });
         }
+        
         createPieChart('conservativePie', pieChartConfigs.conservative);
-        createPieChart('moderatePie', pieChartConfigs.moderate);
-        createPieChart('aggressivePie', pieChartConfigs.aggressive);
         
         portfolioTabs.addEventListener('click', (e) => {
             if (e.target.tagName !== 'BUTTON') return;
-            
             const targetPortfolio = e.target.dataset.portfolio;
-
             portfolioTabs.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
             e.target.classList.add('active');
-
             pieChartContainers.forEach(container => {
                 container.classList.remove('active');
                 if (container.id.startsWith(targetPortfolio)) {
                     container.classList.add('active');
+                    createPieChart(`${targetPortfolio}Pie`, pieChartConfigs[targetPortfolio]);
                 }
             });
         });
