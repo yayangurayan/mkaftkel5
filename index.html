@@ -6,11 +6,6 @@
     <title>Presentasi: Analisa Fundamental & Teknikal</title>
     <!-- Memuat Library Eksternal -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/date-fns@2.29.3/cdn.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@2.0.0"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.4.0"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@0.1.1/dist/chartjs-chart-financial.min.js"></script>
     
     <!-- Memuat Font Google -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -25,13 +20,6 @@
             color: #1e293b; /* slate-800 */
             overflow-x: hidden;
         }
-        .chart-container {
-            position: relative;
-            width: 100%;
-            height: 350px;
-        }
-        @media (min-width: 768px) { .chart-container { height: 450px; } }
-
         .nav-link { transition: color 0.3s, border-bottom-color 0.3s; }
         .nav-link.active { color: #2563eb; border-bottom-color: #2563eb; }
 
@@ -40,9 +28,6 @@
         
         .tab-button.active { background-color: #2563eb; color: white; }
         
-        .pie-chart-container { display: none; }
-        .pie-chart-container.active { display: block; }
-
         #quiz-result { transition: opacity 0.5s ease-in-out, max-height 0.5s ease-in-out; max-height: 0; opacity: 0; overflow: hidden; }
         #quiz-result.show { max-height: 200px; opacity: 1; }
         
@@ -50,7 +35,6 @@
             padding-top: 4rem;
             padding-bottom: 4rem;
         }
-        /* [DIUBAH] Section home menjadi lebih besar dan terpusat */
         #home-section {
             min-height: calc(100vh - 72px); /* 72px adalah tinggi header */
             display: flex;
@@ -67,6 +51,9 @@
             opacity: 1;
             transform: translateY(0);
         }
+        .portfolio-content {
+            transition: opacity 0.3s ease-in-out;
+        }
     </style>
 </head>
 <body class="antialiased">
@@ -74,7 +61,6 @@
     <header id="header" class="bg-white/90 backdrop-blur-lg sticky top-0 z-50 shadow-md">
         <div class="container mx-auto px-4">
             <nav class="flex justify-between items-center py-4">
-                <!-- [DIUBAH] Judul di header -->
                 <h1 class="text-xl md:text-2xl font-extrabold text-blue-600">Analisa Fundamental & Teknikal</h1>
                 <div class="hidden lg:flex items-center space-x-8">
                     <a href="#fondasi" class="nav-link text-slate-600 font-semibold border-b-2 border-transparent pb-1 hover:text-blue-600">Fondasi</a>
@@ -97,7 +83,6 @@
 
     <main class="container mx-auto px-4">
         
-        <!-- [DIUBAH] Section Home disederhanakan -->
         <div id="home-section" class="section-wrapper">
             <section class="text-center lazy-load">
                 <h2 class="text-5xl md:text-7xl font-extrabold tracking-tight text-slate-900">Strategi Trading Modern dengan Manajemen Resiko dan Robo Advisor</h2>
@@ -144,34 +129,18 @@
                     </div>
                 </div>
 
-                <div class="grid lg:grid-cols-5 gap-8 items-start mt-16">
-                    <!-- [DIUBAH] Kalkulator diganti menjadi penjelasan konsep -->
-                    <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-xl border border-slate-200">
-                        <h4 class="text-xl font-bold mb-4 text-slate-900">Kekuatan Risk/Reward Jangka Panjang</h4>
-                        <p class="text-sm text-slate-600 mb-4">Rasio Risk/Reward (RR) yang baik adalah kunci profitabilitas konsisten, bahkan jika tingkat kemenangan (win rate) Anda tidak tinggi.</p>
-                        <ul class="space-y-3 text-sm text-slate-700">
-                            <li class="flex items-start">
-                                <span class="text-blue-500 mr-3 font-bold">✔</span>
-                                <div><strong>Probabilitas Positif:</strong> Dengan RR 1:2, Anda hanya perlu benar 1 dari 3 kali untuk impas (breakeven). Setiap kemenangan setelah itu adalah profit.</div>
-                            </li>
-                             <li class="flex items-start">
-                                <span class="text-blue-500 mr-3 font-bold">✔</span>
-                                <div><strong>Mengelola Kerugian:</strong> RR yang baik secara sistematis membatasi kerugian dan membiarkan keuntungan berjalan, melindungi modal dari kerugian besar yang tak terduga.</div>
-                            </li>
-                        </ul>
-                    </div>
-                    <!-- [DIUBAH] Chart menjadi statis -->
-                    <div class="lg:col-span-3">
-                        <div class="bg-white p-4 rounded-lg shadow-xl border border-slate-200">
-                             <h4 class="text-xl font-bold mb-2 text-slate-900 text-center">Visualisasi Risk/Reward Statis</h4>
-                             <p class="text-sm text-slate-500 text-center mb-2">Contoh setup trading dengan rasio yang menguntungkan.</p>
-                            <div class="chart-container">
-                                <canvas id="staticCandlestickChart"></canvas>
-                            </div>
-                            <div class="text-center mt-4 p-3 bg-slate-100 rounded-md">
-                                 <p id="rr-ratio-text" class="font-semibold text-lg text-slate-700">Contoh Rasio Risk/Reward: 1 : 2.5</p>
-                            </div>
+                <div class="mt-16 bg-white p-8 rounded-lg shadow-xl border border-slate-200 max-w-4xl mx-auto">
+                    <h4 class="text-2xl font-bold mb-4 text-slate-900 text-center">Kekuatan Risk/Reward Jangka Panjang</h4>
+                    <p class="text-sm text-slate-600 mb-6 text-center max-w-2xl mx-auto">Rasio Risk/Reward (RR) yang baik adalah kunci profitabilitas konsisten, bahkan jika tingkat kemenangan (win rate) Anda tidak tinggi.</p>
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                            <h5 class="font-bold text-blue-800 flex items-center"><span class="text-blue-500 mr-3 font-bold">✔</span> Probabilitas Positif</h5>
+                            <p class="text-sm text-slate-700 mt-2">Dengan RR 1:2, Anda hanya perlu benar 1 dari 3 kali untuk impas (breakeven). Setiap kemenangan setelah itu adalah profit murni.</p>
                         </div>
+                         <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                             <h5 class="font-bold text-blue-800 flex items-center"><span class="text-blue-500 mr-3 font-bold">✔</span> Mengelola Kerugian</h5>
+                             <p class="text-sm text-slate-700 mt-2">RR yang baik secara sistematis membatasi kerugian dan membiarkan keuntungan berjalan, melindungi modal dari kerugian besar yang tak terduga.</p>
+                         </div>
                     </div>
                 </div>
             </section>
@@ -227,10 +196,29 @@
                         <button data-portfolio="moderate" class="tab-button w-full sm:w-auto flex-1 px-4 py-2 text-sm font-semibold rounded-md transition-colors">Moderat</button>
                         <button data-portfolio="aggressive" class="tab-button w-full sm:w-auto flex-1 px-4 py-2 text-sm font-semibold rounded-md transition-colors">Agresif</button>
                     </div>
-                    <div class="relative w-full h-80">
-                        <div id="conservative-chart" class="pie-chart-container active absolute inset-0"><canvas id="conservativePie"></canvas></div>
-                        <div id="moderate-chart" class="pie-chart-container absolute inset-0"><canvas id="moderatePie"></canvas></div>
-                        <div id="aggressive-chart" class="pie-chart-container absolute inset-0"><canvas id="aggressivePie"></canvas></div>
+                    <!-- [DIUBAH] Tampilan Chart diganti dengan list teks -->
+                    <div id="portfolio-display" class="mt-8 max-w-md mx-auto">
+                        <div data-content="conservative" class="portfolio-content">
+                            <ul class="space-y-3">
+                                <li class="flex justify-between items-center p-3 bg-blue-50 rounded-md"><span class="font-medium text-slate-700">Obligasi Pemerintah</span><span class="font-bold text-blue-800 text-lg">50%</span></li>
+                                <li class="flex justify-between items-center p-3 bg-blue-50 rounded-md"><span class="font-medium text-slate-700">Obligasi Korporasi</span><span class="font-bold text-blue-800 text-lg">30%</span></li>
+                                <li class="flex justify-between items-center p-3 bg-blue-50 rounded-md"><span class="font-medium text-slate-700">Saham Blue Chip</span><span class="font-bold text-blue-800 text-lg">20%</span></li>
+                            </ul>
+                        </div>
+                        <div data-content="moderate" class="portfolio-content hidden">
+                             <ul class="space-y-3">
+                                <li class="flex justify-between items-center p-3 bg-yellow-50 rounded-md"><span class="font-medium text-slate-700">Saham Global</span><span class="font-bold text-yellow-800 text-lg">50%</span></li>
+                                <li class="flex justify-between items-center p-3 bg-yellow-50 rounded-md"><span class="font-medium text-slate-700">Obligasi</span><span class="font-bold text-yellow-800 text-lg">30%</span></li>
+                                <li class="flex justify-between items-center p-3 bg-yellow-50 rounded-md"><span class="font-medium text-slate-700">Real Estate (REITs)</span><span class="font-bold text-yellow-800 text-lg">20%</span></li>
+                            </ul>
+                        </div>
+                        <div data-content="aggressive" class="portfolio-content hidden">
+                             <ul class="space-y-3">
+                                <li class="flex justify-between items-center p-3 bg-red-50 rounded-md"><span class="font-medium text-slate-700">Saham Teknologi</span><span class="font-bold text-red-800 text-lg">60%</span></li>
+                                <li class="flex justify-between items-center p-3 bg-red-50 rounded-md"><span class="font-medium text-slate-700">Saham Pasar Berkembang</span><span class="font-bold text-red-800 text-lg">30%</span></li>
+                                <li class="flex justify-between items-center p-3 bg-red-50 rounded-md"><span class="font-medium text-slate-700">Kripto</span><span class="font-bold text-red-800 text-lg">10%</span></li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -302,44 +290,6 @@
 
         document.querySelectorAll('.lazy-load').forEach(el => lazyLoadObserver.observe(el));
 
-        // --- [DIUBAH] Grafik Candlestick menjadi Statis ---
-        const staticCandleCtx = document.getElementById('staticCandlestickChart').getContext('2d');
-        const candleData = Array.from({length: 15}, (_, i) => {
-            const time = new Date('2025-10-01T10:00:00Z').getTime() + i * 3600 * 1000;
-            const o = 1.1250 + i * 0.0005 + Math.random() * 0.0005;
-            const h = o + Math.random() * 0.0015;
-            const l = o - Math.random() * 0.0015;
-            const c = l + Math.random() * (h - l);
-            return { t: time, o, h, l, c };
-        });
-        
-        const entryPrice = 1.1285;
-        const stopLossPrice = 1.1260; // Disesuaikan untuk rasio 1:2.5
-        const takeProfitPrice = 1.13475; // (1.1285 - 1.1260) * 2.5 + 1.1285
-        
-        new Chart(staticCandleCtx, {
-            type: 'candlestick',
-            data: { datasets: [{ label: 'EUR/USD', data: candleData }] },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: { 
-                    x: { type: 'time', time: { unit: 'hour' }, grid: { display: false } }, 
-                    y: { title: { display: true, text: 'Harga' } } 
-                },
-                plugins: {
-                    legend: { display: false },
-                    annotation: {
-                        annotations: {
-                            entryLine: { type: 'line', yMin: entryPrice, yMax: entryPrice, borderColor: 'rgb(59, 130, 246)', borderWidth: 2, label: { content: `Entry @ ${entryPrice.toFixed(4)}`, enabled: true, position: 'end', backgroundColor: 'rgba(59, 130, 246, 0.8)' } },
-                            stopLossLine: { type: 'line', yMin: stopLossPrice, yMax: stopLossPrice, borderColor: 'rgb(239, 68, 68)', borderWidth: 2, label: { content: () => `SL @ ${stopLossPrice.toFixed(4)}`, enabled: true, position: 'start', backgroundColor: 'rgba(239, 68, 68, 0.8)' } },
-                            takeProfitLine: { type: 'line', yMin: takeProfitPrice, yMax: takeProfitPrice, borderColor: 'rgb(34, 197, 94)', borderWidth: 2, label: { content: () => `TP @ ${takeProfitPrice.toFixed(4)}`, enabled: true, position: 'start', backgroundColor: 'rgba(34, 197, 94, 0.8)' } }
-                        }
-                    }
-                }
-            }
-        });
-
         // --- Logika Kuis Platform ---
         const quizContainer = document.getElementById('quiz-container');
         const quizResult = document.getElementById('quiz-result');
@@ -366,41 +316,25 @@
             quizResult.classList.add('show');
         });
 
-        // --- Logika Pie Chart Robo-Advisor ---
+        // --- [DIPERBAIKI] Logika Portofolio Robo-Advisor (Tanpa Chart) ---
         const portfolioTabs = document.getElementById('portfolio-tabs');
-        const pieChartContainers = document.querySelectorAll('.pie-chart-container');
-        const pieChartConfigs = {
-            conservative: { labels: ['Obligasi Pemerintah', 'Obligasi Korporasi', 'Saham Blue Chip'], data: [50, 30, 20], colors: ['#60a5fa', '#3b82f6', '#1d4ed8'] },
-            moderate: { labels: ['Saham Global', 'Obligasi', 'Real Estate (REITs)'], data: [50, 30, 20], colors: ['#fbbf24', '#f59e0b', '#b45309'] },
-            aggressive: { labels: ['Saham Teknologi', 'Saham Pasar Berkembang', 'Kripto'], data: [60, 30, 10], colors: ['#f87171', '#ef4444', '#b91c1c'] }
-        };
-
-        let createdCharts = {};
-        function createPieChart(canvasId, config) {
-            if (createdCharts[canvasId]) return;
-            const ctx = document.getElementById(canvasId).getContext('2d');
-            createdCharts[canvasId] = new Chart(ctx, {
-                type: 'pie',
-                data: {
-                    labels: config.labels,
-                    datasets: [{ data: config.data, backgroundColor: config.colors, borderColor: '#f8fafc', borderWidth: 2 }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
-            });
-        }
-        
-        createPieChart('conservativePie', pieChartConfigs.conservative);
+        const portfolioContents = document.querySelectorAll('.portfolio-content');
         
         portfolioTabs.addEventListener('click', (e) => {
             if (e.target.tagName !== 'BUTTON') return;
-            const targetPortfolio = e.target.dataset.portfolio;
+            
+            // Mengatur Tombol Aktif
             portfolioTabs.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
             e.target.classList.add('active');
-            pieChartContainers.forEach(container => {
-                container.classList.remove('active');
-                if (container.id.startsWith(targetPortfolio)) {
-                    container.classList.add('active');
-                    createPieChart(`${targetPortfolio}Pie`, pieChartConfigs[targetPortfolio]);
+            
+            const targetPortfolio = e.target.dataset.portfolio;
+
+            // Menampilkan Konten yang Sesuai
+            portfolioContents.forEach(content => {
+                if (content.dataset.content === targetPortfolio) {
+                    content.classList.remove('hidden');
+                } else {
+                    content.classList.add('hidden');
                 }
             });
         });
